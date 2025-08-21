@@ -108,9 +108,10 @@ target = "engine/controller.lua"
 pattern = '''self.hovering.target = nil'''
 position = "at"
 payload = '''
-              if (self.HID.touch and not self.is_cursor_down) then else
-                self.hovering.target = nil
-              end
+        if (self.HID.touch and not self.is_cursor_down) then else
+            self.hovering.target = nil
+        end
 '''
 match_indent = false
 overwrite = false
+

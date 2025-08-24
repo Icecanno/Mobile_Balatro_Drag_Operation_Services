@@ -207,7 +207,7 @@ end
 local CardArea_can_highlight_ref = CardArea.can_highlight
 function CardArea:can_highlight(card)
     local t = CardArea_can_highlight_ref(self, card)
-    if G.SETTINGS.GRAPHICS.operation_mode > 2 then
+    if (G.SETTINGS.GRAPHICS.operation_mode or 1) > 2 then
         if self.config.type == 'hand' then
             return true
         end

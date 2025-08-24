@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [BaiMao]
 --- MOD_DESCRIPTION: Provide drag card function, incompatible with Bmwallet
 --- BADGE_COLOUR: 2F2F4F
---- VERSION: 1.0.1a
+--- VERSION: 1.0.1b
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -91,7 +91,7 @@ function create_drag_target_from_card(_card)
                     G.FUNCS.sell_card{config={ref_table=other}}
                 end)
             })
-            if _card.area == G.consumeables then
+            if _card.area == G.consumeables and _card.ability.consumeable then
                 drag_target({ cover = G.DRAG_TARGETS.C_use, colour = adjust_alpha(G.C.RED, 0.9),text = {localize('b_use')}, card = _card,
                     active_check = (function(other)
                         return other:can_use_consumeable()
@@ -204,6 +204,18 @@ function CardArea:set_ranks()
     end
 end
 
+local CardArea_can_highlight_ref = CardArea.can_highlight
+function CardArea:can_highlight(card)
+    local t = CardArea_can_highlight_ref(self, card)
+    if G.SETTINGS.GRAPHICS.operation_mode > 2 then
+        if self.config.type == 'hand' then
+            return true
+        end
+    else
+        return t
+    end
+end
+
 local G_UIDEF_use_and_sell_buttons_ref = G.UIDEF.use_and_sell_buttons
 function G.UIDEF.use_and_sell_buttons(card)
     local ret = G_UIDEF_use_and_sell_buttons_ref(card)
@@ -212,6 +224,11 @@ function G.UIDEF.use_and_sell_buttons(card)
         mid.mid = nil
     end
     return ret
+end
+
+G.FUNCS.change_operation_mode = function(args)
+    G.SETTINGS.GRAPHICS.operation_mode = args.to_key
+    G:save_settings()
 end
 
 ----------------------------------------------

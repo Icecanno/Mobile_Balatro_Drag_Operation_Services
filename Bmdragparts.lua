@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [BaiMao]
 --- MOD_DESCRIPTION: Provide drag card function, incompatible with Bmwallet
 --- BADGE_COLOUR: 2F2F4F
---- VERSION: 1.0.1b
+--- VERSION: 1.0.1c
 ----------------------------------------------
 ------------MOD CODE -------------------------
 

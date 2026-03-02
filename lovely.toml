@@ -1,5 +1,5 @@
 [manifest]
-version = "1.0.1b"
+version = "1.0.1c"
 dump_lua = true
 priority = 0
 
@@ -48,12 +48,12 @@ overwrite = false
 [[patches]]
 [patches.pattern]
 target = "engine/controller.lua"
-pattern = '''if not self.released_on.handled and self.dragging.prev_target then'''
+pattern = '''self.released_on.target:release(self.dragging.prev_target)'''
 position = "at"
 payload = '''
-if not self.released_on.handled and self.released_on.target and self.dragging.prev_target then
+        if self.released_on.target.release then self.released_on.target:release(self.dragging.prev_target) end
 '''
-match_indent = true
+match_indent = false
 overwrite = false
 
 [[patches]]
@@ -105,12 +105,87 @@ overwrite = false
 [[patches]]
 [patches.pattern]
 target = "engine/controller.lua"
-pattern = '''self.hovering.target = nil'''
-position = "at"
+pattern = '''self.cursor_down = {T = {x=0, y=0}, target = nil, time = 0, handled = true}'''
+position = "before"
 payload = '''
-        if (self.HID.touch and not self.is_cursor_down) then else
-            self.hovering.target = nil
+self.slide = {handled = true, can = false, target = nil}
+'''
+match_indent = false
+overwrite = false
+
+[[patches]]
+[patches.pattern]
+target = "engine/controller.lua"
+pattern = '''self.cursor_down.handled = true'''
+position = "before"
+payload = '''
+        if self.hover_locked then
+            self.hover_locked.states.hover.is = false
+            self.hover_locked:stop_hover()
+            self.hover_locked = nil
         end
+        if self.cursor_down.target == G.ROOM then self.slide.handled = false end
+'''
+match_indent = false
+overwrite = false
+
+[[patches]]
+[patches.pattern]
+target = "engine/controller.lua"
+pattern = '''if not self.cursor_up.handled then'''
+position = "before"
+payload = '''
+    if not self.slide.handled then
+        if Vector_Dist(self.cursor_down.T, self.cursor_hover.T) >= 0.1*G.MIN_CLICK_DIST then
+            self.slide.can = true
+            self.slide.handled = true
+        end
+    end
+
+    if self.slide.can then
+        if self.hovering.target and self.hovering.target:is(Card) and self.hovering.target.area and G.hand and self.hovering.target.area == G.hand then
+            if not self.slide.target then
+                self.hovering.target:click()
+                self.slide.target = self.hovering.target
+            elseif self.hovering.target ~= self.slide.target then
+                self.hovering.target:click()
+                self.slide.target = self.hovering.target
+            end
+        end
+    end
+
+'''
+match_indent = false
+overwrite = false
+
+[[patches]]
+[patches.pattern]
+target = "engine/controller.lua"
+pattern = '''self.cursor_up.handled = true'''
+position = "before"
+payload = '''
+        self.slide.handled = true; self.slide.can = false; self.slide.target = nil
+'''
+match_indent = false
+overwrite = false
+
+[[patches]]
+[patches.pattern]
+target = "engine/controller.lua"
+pattern = '''self.dragging.target.states.drag.is = false'''
+position = "after"
+payload = '''
+            if self.HID.touch and self.cursor_up.time - self.cursor_down.time > 0.3 and Vector_Dist(self.cursor_down.T, self.cursor_up.T) < G.MIN_CLICK_DIST then
+                self.hover_locked = self.dragging.target
+                self.hover_locked.states.hover.is = true
+                self.hover_locked:set_offset(self.cursor_hover.T, 'Hover')
+                local _ID =  self.hover_locked.ID
+                G.E_MANAGER:add_event(Event({trigger = 'after', blockable = false, blocking = false, delay = G.MIN_HOVER_TIME, func = function()
+                    if self.hover_locked and _ID == self.hover_locked.ID then
+                        self.hover_locked:hover() 
+                    end
+                return true end}))
+            end
 '''
 match_indent = false
 overwrite = false

@@ -8,6 +8,14 @@
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
+Dragparts = SMODS.current_mod
+
+Dragparts.config_tab = function()
+    return {n=G.UIT.ROOT, config = {align = "cm", padding = 0.05, colour = G.C.CLEAR}, nodes={
+        create_option_cycle({w = 3, scale = 0.8, label = localize("b_operation_mode"), options = localize('ml_ope_mod'), opt_callback = 'change_operation_mode', current_option = G.SETTINGS.GRAPHICS.operation_mode or 1}),
+    }}
+end
+
 function create_drag_target_from_card(_card)
     if _card and G.STAGE == G.STAGES.RUN then
         G.DRAG_TARGETS = G.DRAG_TARGETS or {

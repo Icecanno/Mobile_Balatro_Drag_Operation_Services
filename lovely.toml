@@ -182,7 +182,7 @@ pattern = '''elseif (self.cursor_hover.target == nil or (self.HID.touch and not 
 position = "before"
 payload = '''
     elseif self.hover_locked then
-        self.hovering.target.states.hover.is = false
+        if self.hovering.target then self.hovering.target.states.hover.is = false end
 '''
 match_indent = false
 overwrite = false
